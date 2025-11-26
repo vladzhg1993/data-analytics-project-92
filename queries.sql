@@ -99,7 +99,7 @@ ORDER BY
 SELECT
     TO_CHAR(s.sale_date, 'YYYY-MM') AS "date",
     COUNT(DISTINCT s.customer_id) AS "total_customers",
-    SUM(p.price * s.quantity) AS "income"
+    ROUND(SUM(p.price * s.quantity)::numeric, 3) AS "income"
 FROM sales AS s
 JOIN products AS p ON p.product_id = s.product_id
 GROUP BY TO_CHAR(s.sale_date, 'YYYY-MM')
@@ -139,4 +139,5 @@ JOIN sales      AS s ON  s.customer_id   = pc.customer_id
 JOIN customers  AS c ON c.customer_id    = pc.customer_id
 JOIN employees  AS e ON e.employee_id    = s.sales_person_id
 ORDER BY pc.customer_id;
+
 
