@@ -103,7 +103,7 @@ SELECT
 FROM sales AS s
 JOIN products AS p ON p.product_id = s.product_id
 GROUP BY TO_CHAR(s.sale_date, 'YYYY-MM')
-ORDER BY "date";
+ORDER BY date;
 
 ---------------------------------------------------------------
 -- special_offer.csv
