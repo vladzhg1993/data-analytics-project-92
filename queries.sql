@@ -139,4 +139,7 @@ JOIN customers  AS c ON c.customer_id    = pc.customer_id
 JOIN employees  AS e ON e.employee_id    = s.sales_person_id
 ORDER BY pc.customer_id;
 
+-- trigger rebuild
+
+
 
