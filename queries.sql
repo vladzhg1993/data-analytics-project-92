@@ -118,7 +118,8 @@ promo_customers AS (
         fp.first_date
     FROM first_purchase AS fp
     INNER JOIN sales AS s
-        ON fp.customer_id = s.customer_id AND fp.first_date = s.sale_date
+        ON fp.customer_id = s.customer_id
+        AND fp.first_date = s.sale_date
     INNER JOIN products AS p
         ON s.product_id = p.product_id
     WHERE p.price = 0
@@ -127,12 +128,13 @@ promo_customers AS (
 SELECT
     pc.first_date AS sale_date,
     CONCAT(c.first_name, ' ', c.last_name) AS customer,
+    CONCAT(e.first_name, ' ', e.last_name) AS seller
 FROM promo_customers AS pc
 INNER JOIN customers AS c
     ON pc.customer_id = c.customer_id
 INNER JOIN sales AS s
-    ON pc.customer_id = s.customer_id AND pc.first_date = s.sale_date
+    ON pc.customer_id = s.customer_id
+    AND pc.first_date = s.sale_date
 INNER JOIN employees AS e
     ON s.sales_person_id = e.employee_id
 ORDER BY pc.customer_id;
-
