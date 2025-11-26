@@ -1,1 +1,10 @@
-	python3 -m sqlfluff lint /project/queries.sql --dialect=postgres
+install:
+<TAB>npm install
+
+test:
+<TAB>npm -s test
+
+setup:
+<TAB>make install
+<TAB>make test
+
