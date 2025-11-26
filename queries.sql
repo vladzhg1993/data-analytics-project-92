@@ -1,7 +1,6 @@
 -- customers_count.csv
 -- Общее количество покупателей
-SELECT
-    COUNT(DISTINCT c.customer_id) AS customers_count
+SELECT COUNT(DISTINCT c.customer_id) AS customers_count
 FROM customers AS c;
 
 
@@ -39,8 +38,7 @@ WITH employee_avg AS (
 ),
 
 overall AS (
-    SELECT
-        AVG(average_income) AS avg_all
+    SELECT AVG(average_income) AS avg_all
     FROM employee_avg
 )
 
@@ -134,7 +132,7 @@ promo_customers AS (
     FROM first_purchase AS fp
     INNER JOIN sales AS s
         ON fp.customer_id = s.customer_id
-        AND fp.first_date = s.sale_date
+           AND fp.first_date = s.sale_date
     INNER JOIN products AS p
         ON s.product_id = p.product_id
     INNER JOIN customers AS c
