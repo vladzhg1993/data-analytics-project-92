@@ -97,13 +97,13 @@ ORDER BY
 -- Кол-во уникальных клиентов и выручка по месяцам
 ---------------------------------------------------------------
 SELECT
-    TO_CHAR(s.sale_date, 'YYYY-MM') AS "date",
-    COUNT(DISTINCT s.customer_id) AS "total_customers",
-    ROUND(SUM(p.price * s.quantity)::numeric, 3) AS "income"
+    TO_CHAR(s.sale_date, 'YYYY-MM') AS date,
+    COUNT(DISTINCT s.customer_id) AS total_customers,
+    ROUND(SUM(p.price * s.quantity)::numeric, 3) AS income
 FROM sales AS s
 JOIN products AS p ON p.product_id = s.product_id
 GROUP BY TO_CHAR(s.sale_date, 'YYYY-MM')
-ORDER BY "date";
+ORDER BY date;
 
 ---------------------------------------------------------------
 -- special_offer.csv
