@@ -7,9 +7,15 @@ FROM customers;
 -- top_10_total_income.csv
 -- Топ-10 продавцов по общей выручке
 SELECT
-    CONCAT(TRIM(employees.first_name), ' ', TRIM(employees.last_name)) AS seller,
+    CONCAT(
+        TRIM(employees.first_name),
+        ' ',
+        TRIM(employees.last_name)
+    ) AS seller,
     COUNT(*) AS operations,
-    FLOOR(SUM(products.price * sales.quantity)) AS income
+    FLOOR(
+        SUM(products.price * sales.quantity)
+    ) AS income
 FROM sales
 JOIN employees
     ON sales.sales_person_id = employees.employee_id
@@ -23,8 +29,14 @@ LIMIT 10;
 -- Продавцы с самой низкой средней выручкой
 WITH employee_avg AS (
     SELECT
-        CONCAT(TRIM(employees.first_name), ' ', TRIM(employees.last_name)) AS seller,
-        FLOOR(AVG(products.price * sales.quantity)) AS average_income
+        CONCAT(
+            TRIM(employees.first_name),
+            ' ',
+            TRIM(employees.last_name)
+        ) AS seller,
+        FLOOR(
+            AVG(products.price * sales.quantity)
+        ) AS average_income
     FROM sales
     JOIN employees
         ON sales.sales_person_id = employees.employee_id
@@ -33,7 +45,8 @@ WITH employee_avg AS (
     GROUP BY seller
 ),
 overall AS (
-    SELECT AVG(employee_avg.average_income) AS avg_all
+    SELECT
+        AVG(employee_avg.average_income) AS avg_all
     FROM employee_avg
 )
 
@@ -48,9 +61,19 @@ ORDER BY employee_avg.average_income ASC;
 -- day_of_the_week_income.csv
 -- Выручка по дням недели (по продавцам)
 SELECT
-    CONCAT(TRIM(employees.first_name), ' ', TRIM(employees.last_name)) AS seller,
-    TRIM(LOWER(TO_CHAR(sales.sale_date, 'Day'))) AS day_of_week,
-    FLOOR(SUM(products.price * sales.quantity)) AS income
+    CONCAT(
+        TRIM(employees.first_name),
+        ' ',
+        TRIM(employees.last_name)
+    ) AS seller,
+    TRIM(
+        LOWER(
+            TO_CHAR(sales.sale_date, 'Day')
+        )
+    ) AS day_of_week,
+    FLOOR(
+        SUM(products.price * sales.quantity)
+    ) AS income
 FROM sales
 JOIN employees
     ON sales.sales_person_id = employees.employee_id
@@ -90,8 +113,12 @@ ORDER BY
 -- Кол-во уникальных клиентов и выручка по месяцам
 SELECT
     TO_CHAR(sales.sale_date, 'YYYY-MM') AS selling_month,
-    COUNT(DISTINCT sales.customer_id) AS total_customers,
-    FLOOR(SUM(products.price * sales.quantity)) AS income
+    COUNT(
+        DISTINCT sales.customer_id
+    ) AS total_customers,
+    FLOOR(
+        SUM(products.price * sales.quantity)
+    ) AS income
 FROM sales
 JOIN products
     ON sales.product_id = products.product_id
@@ -121,9 +148,17 @@ promo_customers AS (
 )
 
 SELECT
-    CONCAT(customers.first_name, ' ', customers.last_name) AS customer,
+    CONCAT(
+        customers.first_name,
+        ' ',
+        customers.last_name
+    ) AS customer,
     promo_customers.first_date AS sale_date,
-    CONCAT(employees.first_name, ' ', employees.last_name) AS seller
+    CONCAT(
+        employees.first_name,
+        ' ',
+        employees.last_name
+    ) AS seller
 FROM promo_customers
 JOIN customers
     ON promo_customers.customer_id = customers.customer_id
