@@ -127,7 +127,6 @@ promo_customers AS (
 SELECT
     pc.first_date AS sale_date,
     CONCAT(c.first_name, ' ', c.last_name) AS customer,
-    CONCAT(e.first_name, ' ', e.last_name) AS seller
 FROM promo_customers AS pc
 INNER JOIN customers AS c
     ON pc.customer_id = c.customer_id
@@ -136,3 +135,4 @@ INNER JOIN sales AS s
 INNER JOIN employees AS e
     ON s.sales_person_id = e.employee_id
 ORDER BY pc.customer_id;
+
