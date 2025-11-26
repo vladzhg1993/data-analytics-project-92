@@ -1,18 +1,17 @@
 -- customers_count.csv
 -- Общее количество покупателей
-SELECT
-    COUNT(DISTINCT customers.customer_id) AS customers_count
+SELECT COUNT(DISTINCT customer_id) AS customers_count
 FROM customers;
 
 -- top_10_total_income.csv
 -- Топ-10 продавцов по общей выручке
 SELECT
     CONCAT(
-        TRIM(employees.first_name),
+        employees.first_name,
         ' ',
-        TRIM(employees.last_name)
+        employees.last_name
     ) AS seller,
-    COUNT(*) AS operations,
+    COUNT(sales.sales_person_id) AS operations,
     FLOOR(
         SUM(products.price * sales.quantity)
     ) AS income
