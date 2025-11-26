@@ -12,9 +12,9 @@ SELECT
     FLOOR(SUM(p.price * s.quantity)) AS income
 FROM sales AS s
 INNER JOIN employees AS e
-    ON s.sales_person_id = e.employee_id
+    ON e.employee_id = s.sales_person_id
 INNER JOIN products AS p
-    ON s.product_id = p.product_id
+    ON p.product_id = s.product_id
 GROUP BY seller
 ORDER BY income DESC
 LIMIT 10;
@@ -22,29 +22,34 @@ LIMIT 10;
 
 -- lowest_average_income.csv
 -- Продавцы с самой низкой средней выручкой
-WITH employee_avg AS (
+SELECT
+    t.seller,
+    t.average_income
+FROM (
     SELECT
         CONCAT(TRIM(e.first_name), ' ', TRIM(e.last_name)) AS seller,
         FLOOR(AVG(p.price * s.quantity)) AS average_income
     FROM sales AS s
     INNER JOIN employees AS e
-        ON s.sales_person_id = e.employee_id
+        ON e.employee_id = s.sales_person_id
     INNER JOIN products AS p
-        ON s.product_id = p.product_id
+        ON p.product_id = s.product_id
     GROUP BY seller
-),
-overall AS (
-    SELECT AVG(employee_avg.average_income) AS avg_all
-    FROM employee_avg
+) AS t
+WHERE t.average_income < (
+    SELECT AVG(inner_t.average_income)
+    FROM (
+        SELECT
+            FLOOR(AVG(p.price * s2.quantity)) AS average_income
+        FROM sales AS s2
+        INNER JOIN employees AS e2
+            ON e2.employee_id = s2.sales_person_id
+        INNER JOIN products AS p2
+            ON p2.product_id = s2.product_id
+        GROUP BY CONCAT(TRIM(e2.first_name), ' ', TRIM(e2.last_name))
+    ) AS inner_t
 )
-
-SELECT
-    ea.seller,
-    ea.average_income
-FROM employee_avg AS ea
-CROSS JOIN overall
-WHERE ea.average_income < overall.avg_all
-ORDER BY ea.average_income ASC;
+ORDER BY t.average_income ASC;
 
 
 -- day_of_the_week_income.csv
@@ -55,9 +60,9 @@ SELECT
     FLOOR(SUM(p.price * s.quantity)) AS income
 FROM sales AS s
 INNER JOIN employees AS e
-    ON s.sales_person_id = e.employee_id
+    ON e.employee_id = s.sales_person_id
 INNER JOIN products AS p
-    ON s.product_id = p.product_id
+    ON p.product_id = s.product_id
 GROUP BY
     seller,
     day_of_week,
@@ -98,41 +103,32 @@ SELECT
     FLOOR(SUM(p.price * s.quantity)) AS income
 FROM sales AS s
 INNER JOIN products AS p
-    ON s.product_id = p.product_id
+    ON p.product_id = s.product_id
 GROUP BY selling_month
 ORDER BY selling_month;
 
 
 -- special_offer.csv
 -- Покупатели, чья первая покупка пришлась на акцию (есть товар с price = 0)
-WITH first_purchase AS (
+SELECT
+    fp.first_date AS sale_date,
+    CONCAT(c.first_name, ' ', c.last_name) AS customer,
+    CONCAT(e.first_name, ' ', e.last_name) AS seller
+FROM (
     SELECT
         s.customer_id,
         MIN(s.sale_date) AS first_date
     FROM sales AS s
     GROUP BY s.customer_id
-),
-promo_customers AS (
-    SELECT DISTINCT
-        fp.customer_id,
-        fp.first_date
-    FROM first_purchase AS fp
-    INNER JOIN sales AS s
-        ON (fp.customer_id = s.customer_id AND fp.first_date = s.sale_date)
-    INNER JOIN products AS p
-        ON s.product_id = p.product_id
-    WHERE p.price = 0
-)
-
-SELECT
-    pc.first_date AS sale_date,
-    CONCAT(c.first_name, ' ', c.last_name) AS customer,
-    CONCAT(e.first_name, ' ', e.last_name) AS seller
-FROM promo_customers AS pc
-INNER JOIN customers AS c
-    ON pc.customer_id = c.customer_id
+) AS fp
 INNER JOIN sales AS s
-    ON (pc.customer_id = s.customer_id AND pc.first_date = s.sale_date)
+    ON s.customer_id = fp.customer_id
+    AND s.sale_date = fp.first_date
+INNER JOIN products AS p
+    ON p.product_id = s.product_id
+INNER JOIN customers AS c
+    ON c.customer_id = fp.customer_id
 INNER JOIN employees AS e
-    ON s.sales_person_id = e.employee_id
-ORDER BY pc.customer_id;
+    ON e.employee_id = s.sales_person_id
+WHERE p.price = 0
+ORDER BY fp.customer_id;
