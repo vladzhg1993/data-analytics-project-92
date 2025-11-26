@@ -144,3 +144,4 @@ SELECT
 FROM promo_customers AS pc
 ORDER BY pc.customer_id;
 -- rebuild cache
+-- force rebuild
