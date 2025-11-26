@@ -1,2 +1,3 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/vladzhg1993/data-analytics-project-92/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/vladzhg1993/data-analytics-project-92/actions)
+ 
