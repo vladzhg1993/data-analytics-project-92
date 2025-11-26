@@ -1,90 +1,77 @@
 -- customers_count.csv
 -- Общее количество покупателей
-SELECT COUNT(DISTINCT customer_id) AS customers_count
-FROM customers;
+SELECT
+    COUNT(DISTINCT c.customer_id) AS customers_count
+FROM customers AS c;
+
 
 -- top_10_total_income.csv
 -- Топ-10 продавцов по общей выручке
 SELECT
-    CONCAT(
-        employees.first_name,
-        ' ',
-        employees.last_name
-    ) AS seller,
-    COUNT(sales.sales_person_id) AS operations,
-    FLOOR(
-        SUM(products.price * sales.quantity)
-    ) AS income
-FROM sales
-JOIN employees
-    ON sales.sales_person_id = employees.employee_id
-JOIN products
-    ON sales.product_id = products.product_id
+    CONCAT(e.first_name, ' ', e.last_name) AS seller,
+    COUNT(*) AS operations,
+    FLOOR(SUM(p.price * s.quantity)) AS income
+FROM sales AS s
+INNER JOIN employees AS e
+    ON s.sales_person_id = e.employee_id
+INNER JOIN products AS p
+    ON s.product_id = p.product_id
 GROUP BY seller
 ORDER BY income DESC
 LIMIT 10;
+
 
 -- lowest_average_income.csv
 -- Продавцы с самой низкой средней выручкой
 WITH employee_avg AS (
     SELECT
-        CONCAT(
-            TRIM(employees.first_name),
-            ' ',
-            TRIM(employees.last_name)
-        ) AS seller,
-        FLOOR(
-            AVG(products.price * sales.quantity)
-        ) AS average_income
-    FROM sales
-    JOIN employees
-        ON sales.sales_person_id = employees.employee_id
-    JOIN products
-        ON sales.product_id = products.product_id
+        CONCAT(e.first_name, ' ', e.last_name) AS seller,
+        FLOOR(AVG(p.price * s.quantity)) AS average_income
+    FROM sales AS s
+    INNER JOIN employees AS e
+        ON s.sales_person_id = e.employee_id
+    INNER JOIN products AS p
+        ON s.product_id = p.product_id
     GROUP BY seller
 ),
 overall AS (
     SELECT
-        AVG(employee_avg.average_income) AS avg_all
+        AVG(average_income) AS avg_all
     FROM employee_avg
 )
 
 SELECT
-    employee_avg.seller,
-    employee_avg.average_income
-FROM employee_avg
+    ea.seller,
+    ea.average_income
+FROM employee_avg AS ea
 CROSS JOIN overall
-WHERE employee_avg.average_income < overall.avg_all
-ORDER BY employee_avg.average_income ASC;
+WHERE ea.average_income < overall.avg_all
+ORDER BY ea.average_income ASC;
+
 
 -- day_of_the_week_income.csv
 -- Выручка по дням недели (по продавцам)
 SELECT
-    CONCAT(
-        TRIM(employees.first_name),
-        ' ',
-        TRIM(employees.last_name)
-    ) AS seller,
+    CONCAT(e.first_name, ' ', e.last_name) AS seller,
     TRIM(
         LOWER(
-            TO_CHAR(sales.sale_date, 'Day')
+            TO_CHAR(s.sale_date, 'Day')
         )
     ) AS day_of_week,
-    FLOOR(
-        SUM(products.price * sales.quantity)
-    ) AS income
-FROM sales
-JOIN employees
-    ON sales.sales_person_id = employees.employee_id
-JOIN products
-    ON sales.product_id = products.product_id
+    FLOOR(SUM(p.price * s.quantity)) AS income
+FROM sales AS s
+INNER JOIN employees AS e
+    ON s.sales_person_id = e.employee_id
+INNER JOIN products AS p
+    ON s.product_id = p.product_id
 GROUP BY
     seller,
     day_of_week,
-    EXTRACT(ISODOW FROM sales.sale_date)
+    EXTRACT(ISODOW FROM s.sale_date)
 ORDER BY
-    EXTRACT(ISODOW FROM sales.sale_date),
+    EXTRACT(ISODOW FROM s.sale_date),
     seller;
+
 
 -- age_groups.csv
 -- Количество покупателей по возрастным группам
@@ -94,11 +81,11 @@ SELECT
 FROM (
     SELECT
         CASE
-            WHEN customers.age BETWEEN 16 AND 25 THEN '16-25'
-            WHEN customers.age BETWEEN 26 AND 40 THEN '26-40'
-            WHEN customers.age > 40 THEN '40+'
+            WHEN c.age BETWEEN 16 AND 25 THEN '16-25'
+            WHEN c.age BETWEEN 26 AND 40 THEN '26-40'
+            WHEN c.age > 40 THEN '40+' 
         END AS age_category
-    FROM customers
+    FROM customers AS c
 ) AS grouped
 GROUP BY age_category
 ORDER BY
@@ -108,62 +95,51 @@ ORDER BY
         WHEN age_category = '40+' THEN 3
     END;
 
+
 -- customers_by_month.csv
 -- Кол-во уникальных клиентов и выручка по месяцам
 SELECT
-    TO_CHAR(sales.sale_date, 'YYYY-MM') AS selling_month,
-    COUNT(
-        DISTINCT sales.customer_id
-    ) AS total_customers,
-    FLOOR(
-        SUM(products.price * sales.quantity)
-    ) AS income
-FROM sales
-JOIN products
-    ON sales.product_id = products.product_id
+    TO_CHAR(s.sale_date, 'YYYY-MM') AS selling_month,
+    COUNT(DISTINCT s.customer_id) AS total_customers,
+    FLOOR(SUM(p.price * s.quantity)) AS income
+FROM sales AS s
+INNER JOIN products AS p
+    ON s.product_id = p.product_id
 GROUP BY selling_month
 ORDER BY selling_month;
+
 
 -- special_offer.csv
 -- Покупатели, чья первая покупка пришлась на акцию (цена = 0)
 WITH first_purchase AS (
     SELECT
-        sales.customer_id,
-        MIN(sales.sale_date) AS first_date
-    FROM sales
-    GROUP BY sales.customer_id
+        s.customer_id,
+        MIN(s.sale_date) AS first_date
+    FROM sales AS s
+    GROUP BY s.customer_id
 ),
 promo_customers AS (
     SELECT DISTINCT
-        first_purchase.customer_id,
-        first_purchase.first_date
-    FROM first_purchase
-    JOIN sales
-        ON sales.customer_id = first_purchase.customer_id
-        AND sales.sale_date = first_purchase.first_date
-    JOIN products
-        ON sales.product_id = products.product_id
-    WHERE products.price = 0
+        fp.customer_id,
+        fp.first_date,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer,
+        CONCAT(e.first_name, ' ', e.last_name) AS seller
+    FROM first_purchase AS fp
+    INNER JOIN sales AS s
+        ON fp.customer_id = s.customer_id
+        AND fp.first_date = s.sale_date
+    INNER JOIN products AS p
+        ON s.product_id = p.product_id
+    INNER JOIN customers AS c
+        ON fp.customer_id = c.customer_id
+    INNER JOIN employees AS e
+        ON s.sales_person_id = e.employee_id
+    WHERE p.price = 0
 )
 
 SELECT
-    CONCAT(
-        customers.first_name,
-        ' ',
-        customers.last_name
-    ) AS customer,
-    promo_customers.first_date AS sale_date,
-    CONCAT(
-        employees.first_name,
-        ' ',
-        employees.last_name
-    ) AS seller
-FROM promo_customers
-JOIN customers
-    ON promo_customers.customer_id = customers.customer_id
-JOIN sales
-    ON sales.customer_id = promo_customers.customer_id
-    AND sales.sale_date = promo_customers.first_date
-JOIN employees
-    ON sales.sales_person_id = employees.employee_id
-ORDER BY promo_customers.customer_id;
+    pc.first_date AS sale_date,
+    pc.customer,
+    pc.seller
+FROM promo_customers AS pc
+ORDER BY pc.customer_id;
