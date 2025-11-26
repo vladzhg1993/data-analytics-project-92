@@ -105,7 +105,6 @@ JOIN products AS p ON p.product_id = s.product_id
 GROUP BY TO_CHAR(s.sale_date, 'YYYY-MM')
 ORDER BY "date";
 
-
 ---------------------------------------------------------------
 -- special_offer.csv
 -- Покупатели, чья первая покупка пришлась на акцию (есть товар с price = 0)
