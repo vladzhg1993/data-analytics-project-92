@@ -16,8 +16,10 @@ INNER JOIN employees AS e
     ON s.sales_person_id = e.employee_id
 INNER JOIN products AS p
     ON s.product_id = p.product_id
-GROUP BY seller
-ORDER BY income DESC
+GROUP BY
+    seller
+ORDER BY
+    income DESC
 LIMIT 10;
 
 
@@ -32,8 +34,10 @@ WITH employee_avg AS (
         ON s.sales_person_id = e.employee_id
     INNER JOIN products AS p
         ON s.product_id = p.product_id
-    GROUP BY seller
+    GROUP BY
+        seller
 ),
+
 overall AS (
     SELECT
         AVG(average_income) AS avg_all
@@ -45,19 +49,17 @@ SELECT
     ea.average_income
 FROM employee_avg AS ea
 CROSS JOIN overall
-WHERE ea.average_income < overall.avg_all
-ORDER BY ea.average_income ASC;
+WHERE
+    ea.average_income < overall.avg_all
+ORDER BY
+    ea.average_income ASC;
 
 
 -- day_of_the_week_income.csv
 -- Выручка по дням недели (по продавцам)
 SELECT
     CONCAT(e.first_name, ' ', e.last_name) AS seller,
-    TRIM(
-        LOWER(
-            TO_CHAR(s.sale_date, 'Day')
-        )
-    ) AS day_of_week,
+    TRIM(LOWER(TO_CHAR(s.sale_date, 'Day'))) AS day_of_week,
     FLOOR(SUM(p.price * s.quantity)) AS income
 FROM sales AS s
 INNER JOIN employees AS e
@@ -83,11 +85,12 @@ FROM (
         CASE
             WHEN c.age BETWEEN 16 AND 25 THEN '16-25'
             WHEN c.age BETWEEN 26 AND 40 THEN '26-40'
-            WHEN c.age > 40 THEN '40+' 
+            WHEN c.age > 40 THEN '40+'
         END AS age_category
     FROM customers AS c
 ) AS grouped
-GROUP BY age_category
+GROUP BY
+    age_category
 ORDER BY
     CASE
         WHEN age_category = '16-25' THEN 1
@@ -105,8 +108,10 @@ SELECT
 FROM sales AS s
 INNER JOIN products AS p
     ON s.product_id = p.product_id
-GROUP BY selling_month
-ORDER BY selling_month;
+GROUP BY
+    selling_month
+ORDER BY
+    selling_month;
 
 
 -- special_offer.csv
@@ -116,8 +121,10 @@ WITH first_purchase AS (
         s.customer_id,
         MIN(s.sale_date) AS first_date
     FROM sales AS s
-    GROUP BY s.customer_id
+    GROUP BY
+        s.customer_id
 ),
+
 promo_customers AS (
     SELECT DISTINCT
         fp.customer_id,
@@ -134,7 +141,8 @@ promo_customers AS (
         ON fp.customer_id = c.customer_id
     INNER JOIN employees AS e
         ON s.sales_person_id = e.employee_id
-    WHERE p.price = 0
+    WHERE
+        p.price = 0
 )
 
 SELECT
@@ -142,8 +150,5 @@ SELECT
     pc.customer,
     pc.seller
 FROM promo_customers AS pc
-ORDER BY pc.customer_id;
--- rebuild cache
--- force rebuild
--- rebuild
--- rebuild
+ORDER BY
+    pc.customer_id;
